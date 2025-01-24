@@ -1,24 +1,89 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Ферма</title>
+    <title>TapBloom</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        body {
+            background: #e6f5d0;
+            text-align: center;
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        button {
+            background: #8bc34a;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 15px;
+            margin: 10px;
+            cursor: pointer;
+            font-size: 18px;
+            transition: transform 0.1s;
+        }
+        button:active {
+            transform: scale(0.95);
+        }
+        #gold {
+            font-size: 24px;
+            color: #689f38;
+            margin: 20px;
+        }
+        #autoclickers {
+            font-size: 18px;
+            color: #4a752c;
+        }
+    </style>
 </head>
 <body>
-    <div id="gold">Золото: 0</div>
-    <button onclick="click()">🌻 Клик!</button>
+    <h1>TapBloom 🌻</h1>
+    <div id="gold">Gold: 0</div>
+    <button onclick="handleClick()">🌻 Click!</button>
+    <button onclick="buyAutoclicker()">🤖 Buy Autoclicker (10 gold)</button>
+    <div id="autoclickers">Autoclickers: 0</div>
+
     <script>
         let gold = 0;
-        
-        function click() {
+        let autoclickers = 0;
+        const goldElement = document.getElementById("gold");
+        const autoclickersElement = document.getElementById("autoclickers");
+
+        // Загрузка сохраненных данных
+        Telegram.WebApp.ready();
+        Telegram.WebApp.sendData("load"); // Запрос данных у бота
+
+        // Обработчик клика
+        function handleClick() {
             gold += 1;
-            document.getElementById("gold").innerText = `Золото: ${gold}`;
-            // Отправляем данные в бот (через Telegram WebApp)
-            Telegram.WebApp.sendData(JSON.stringify({gold: gold}));
+            updateUI();
         }
 
-        // Инициализация WebApp
-        Telegram.WebApp.ready();
+        // Покупка автокликера
+        function buyAutoclicker() {
+            if (gold >= 10) {
+                gold -= 10;
+                autoclickers += 1;
+                updateUI();
+            }
+        }
+
+        // Автоматическое начисление
+        setInterval(() => {
+            gold += autoclickers;
+            updateUI();
+        }, 3000);
+
+        // Обновление интерфейса
+        function updateUI() {
+            goldElement.innerText = `Gold: ${gold}`;
+            autoclickersElement.innerText = `Autoclickers: ${autoclickers}`;
+            // Сохранение данных при изменении
+            Telegram.WebApp.sendData(JSON.stringify({ gold, autoclickers }));
+        }
+
+        // Закрытие игры -> сохранение
+        Telegram.WebApp.onEvent('viewportChanged', () => {
+            Telegram.WebApp.sendData(JSON.stringify({ gold, autoclickers }));
+        });
     </script>
 </body>
 </html>
