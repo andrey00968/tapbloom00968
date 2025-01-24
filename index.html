@@ -47,43 +47,57 @@
         const goldElement = document.getElementById("gold");
         const autoclickersElement = document.getElementById("autoclickers");
 
-        // Загрузка сохраненных данных
+        // Инициализация WebApp
         Telegram.WebApp.ready();
-        Telegram.WebApp.sendData("load"); // Запрос данных у бота
+        
+        // Запрос данных при загрузке
+        Telegram.WebApp.sendData(JSON.stringify({ action: "load" }));
 
-        // Обработчик клика
+        // Обработчик ответа от бота
+        Telegram.WebApp.onEvent('messageReceived', (message) => {
+            try {
+                const data = JSON.parse(message);
+                gold = data.gold || 0;
+                autoclickers = data.autoclickers || 0;
+                updateUI();
+            } catch(e) {
+                console.error('Error parsing data:', e);
+            }
+        });
+
         function handleClick() {
             gold += 1;
             updateUI();
+            saveProgress();
         }
 
-        // Покупка автокликера
         function buyAutoclicker() {
             if (gold >= 10) {
                 gold -= 10;
                 autoclickers += 1;
                 updateUI();
+                saveProgress();
             }
         }
 
-        // Автоматическое начисление
+        function updateUI() {
+            goldElement.textContent = `Gold: ${gold}`;
+            autoclickersElement.textContent = `Autoclickers: ${autoclickers}`;
+        }
+
+        function saveProgress() {
+            Telegram.WebApp.sendData(JSON.stringify({
+                gold: gold,
+                autoclickers: autoclickers
+            }));
+        }
+
+        // Автокликеры
         setInterval(() => {
             gold += autoclickers;
             updateUI();
+            saveProgress();
         }, 3000);
-
-        // Обновление интерфейса
-        function updateUI() {
-            goldElement.innerText = `Gold: ${gold}`;
-            autoclickersElement.innerText = `Autoclickers: ${autoclickers}`;
-            // Сохранение данных при изменении
-            Telegram.WebApp.sendData(JSON.stringify({ gold, autoclickers }));
-        }
-
-        // Закрытие игры -> сохранение
-        Telegram.WebApp.onEvent('viewportChanged', () => {
-            Telegram.WebApp.sendData(JSON.stringify({ gold, autoclickers }));
-        });
     </script>
 </body>
 </html>
