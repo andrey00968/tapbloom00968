@@ -86,11 +86,13 @@
         }
 
         function saveProgress() {
-            Telegram.WebApp.sendData(JSON.stringify({
-                gold: gold,
-                autoclickers: autoclickers
-            }));
-        }
+    const data = { 
+        gold: Number(gold),  // Явное преобразование в число
+        autoclickers: Number(autoclickers) 
+    };
+    console.log("Отправка данных:", data);
+    Telegram.WebApp.sendData(JSON.stringify(data));
+}
 
         // Автокликеры
         setInterval(() => {
